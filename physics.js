@@ -27,33 +27,42 @@ const particle = createParticle(static||Dinamic,
 
 */
 
-const magnet = (
+
+/*BEHAVIOURS*/
+
+const createMagnet = (
     //default params
     m = createVector(),
-    ) => {
+    body = this
+    ) => ({
        
-    const self = {
-        kind: 'magnet',
-        m,
-        field: function(x=0,y=0, z=0) {
-            let vecr = createVector(x - this.pos.x, y-this.pos.y, z-this.pos.z);
-            //console.log(vecr);
-            let versorr = vecr.copy().setMag(1);
-            let r = vecr.mag();
-            if(r > 3) {
-                let B = versorr.copy();
-                B.mult(3*( m.dot(versorr) ));
-                B.sub(m);
-                B.div(r*r*r);
-                return B;
-            }
+    kind: 'magnet',
+    m,
+    body,
+    field: (x=0,y=0, z=0) => {
+        let vecr = createVector(x - body.pos.x, y-body.pos.y, z-body.pos.z);
+        //console.log(vecr);
+        let versorr = createVector().copy(vecr).setMag(1);
+        let r = vecr.mag();
+        if(r > 3) {
+            let B = createVector().copy(versorr);
+            B.mult(3*( m.dot(versorr) ));
+            B.sub(m);
+            B.div(r*r*r);
+            return B;
         }
     }
 
-    return self;
+});
 
-};
+/*I think I have to use currying here to let the magnet behaviour 
+access the particle's position, so I create the magnet behaviour 
+only when attributing this behaviour to the particle's self.*/
+const magnet = (m) =>  (body) => {
+    return createMagnet(m, body);
+}
 
+/*THE PARTICLE FACTORY*/
 
 const createParticle = function(
 
@@ -64,17 +73,21 @@ const createParticle = function(
 ) {
 
     const self = {
-        pos,
-        movement: arguments[1],
+        engine: 
+        { 
+            pos, 
+            movement: arguments[1],
+        }
     }
 
     for (const physics of args) {
-        self[physics.kind] = physics;
+        self[physics(self.engine).kind] = physics(self.engine);
     }
 
     return self;
 };
 
-const particle = createParticle(vec(10,10), 'dynamic', magnet(vec(2,2)));
-//const particle = createParticle(vec(10,10), 'dynamic', dipole = function() { return magnet(vec(1,1));} );
+
+const particle = createParticle(  vec(10,10), 'dynamic', magnet(vec(2,2)) );
+
 
