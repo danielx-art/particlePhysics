@@ -33,7 +33,7 @@ const createVector = function( x = 0, y = 0, z = 0 ) {
             if(escalar == 0) {
                 escalar += 0.01;
             }
-            this.mult(1/escalar);
+            return this.mult(1/escalar);
         },
         dot: function(other){
             return this.x*other.x + this.y*other.y + this.z*other.z;
@@ -42,7 +42,10 @@ const createVector = function( x = 0, y = 0, z = 0 ) {
             const tempx = this.y * other.z - this.z * other.y;
             const tempy = this.z * other.x - this.x * other.z;
             const tempz = this.x * other.y - this.y * other.x;
-            return this;
+            //this.x = tempx;
+            //this.y = tempy;
+            //this.z = tempz;
+            return createVector(tempx, tempy, tempz);
         },
         mag: function(){
             return Math.sqrt(this.dot(this));
